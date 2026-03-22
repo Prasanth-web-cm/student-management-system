@@ -9,7 +9,7 @@ services:
     startCommand: npm start
     envVars:
       - key: MONGO_URI
-        value: "mongodb+srv://prasanthsaiponna_db_user:234e1a3382@cluster0.pk8beau.mongodb.net/student-management?retryWrites=true&w=majority"
+        value: "mongodb+srv://prasanthsaiponna_db_user:prasanth2006@cluster0.pk8beau.mongodb.net/student-management?retryWrites=true&w=majority"
       - key: PORT
         value: "5000"
       - key: JWT_SECRET
