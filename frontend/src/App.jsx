@@ -6,6 +6,7 @@ import AdminLogin from './pages/AdminLogin';
 import StudentRegister from './pages/StudentRegister';
 import StudentDashboard from './pages/StudentDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import ManageStudents from './pages/ManageStudents';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import { AuthProvider, useAuth } from './context/AuthContext';
@@ -67,6 +68,14 @@ function App() {
               element={
                 <ProtectedRoute role="admin">
                   <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/admin/students" 
+              element={
+                <ProtectedRoute role="admin">
+                  <ManageStudents />
                 </ProtectedRoute>
               } 
             />
