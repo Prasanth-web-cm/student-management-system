@@ -5,7 +5,11 @@ const dotenv = require('dotenv');
 const fs = require('fs');
 const path = require('path');
 
-dotenv.config({ path: path.join(__dirname, '.env') });
+// Try to load .env only if not already in production/Render
+if (process.env.NODE_ENV !== 'production' && fs.existsSync(path.join(__dirname, '.env'))) {
+    dotenv.config({ path: path.join(__dirname, '.env') });
+}
+// Note: Render sets environment variables directly in the process, which take precedence.
 
 const app = express();
 app.use(cors());
