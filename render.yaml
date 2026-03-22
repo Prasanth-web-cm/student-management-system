@@ -25,5 +25,5 @@ services:
     publishCommand: npm run build
     publishPath: dist
     envVars:
-      - key: VITE_API_URL
+      - key: VITE_API_BASE_URL
         value: "https://student-management-backend.onrender.com"
