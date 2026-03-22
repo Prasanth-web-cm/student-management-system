@@ -1,7 +1,14 @@
 import React from 'react';
 import { Download, CheckCircle, FileText, AlertCircle } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import PerformancePredictor from '../components/PerformancePredictor';
 
 export default function StudentDashboard() {
+  const { id } = useParams();
+  const { user } = useAuth();
+  const studentId = id || (user && user._id) || '123'; // Fallback for demo if no ID
+
   const downloadMarks = () => {
     // In real app, call /api/export/marks/:id
     window.location.href = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/export/marks/123`;
@@ -78,6 +85,9 @@ export default function StudentDashboard() {
             </div>
           </div>
         </div>
+        
+        {/* AI Performance Predictor */}
+        <PerformancePredictor studentId={studentId} />
 
         {/* Pending Quizzes/Forms */}
         <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 md:col-span-2">

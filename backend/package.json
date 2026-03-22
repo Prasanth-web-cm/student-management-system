@@ -2,7 +2,7 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js"
@@ -12,7 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "engines": {
-    "node": "18.x"
+    "node": "20.x"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -20,7 +20,9 @@
     "dotenv": "^17.3.1",
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
+    "ml-regression-multivariate-linear": "^2.0.4",
     "mongoose": "^9.3.0",
-    "multer": "^2.1.1"
+    "multer": "^2.1.1",
+    "simple-statistics": "^7.8.9"
   }
 }

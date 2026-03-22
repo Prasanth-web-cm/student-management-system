@@ -30,6 +30,7 @@ const markRoutes = require('./routes/marks');
 const attendanceRoutes = require('./routes/attendance');
 const quizRoutes = require('./routes/quizzes');
 const exportRoutes = require('./routes/export');
+const mlRoutes = require('./routes/mlRoutes');
 
 // Base route test
 app.get('/api/status', (req, res) => {
@@ -43,6 +44,7 @@ app.use('/api/marks', markRoutes);
 app.use('/api/attendance', attendanceRoutes);
 app.use('/api/quizzes', quizRoutes);
 app.use('/api/export', exportRoutes);
+app.use('/api/ml', mlRoutes);
 
 // Import routes later
 
@@ -54,11 +56,32 @@ if (!process.env.MONGO_URI) {
   console.warn('WARNING: Using fallback local MongoDB URI. Render should set MONGO_URI env var.');
 }
 
-mongoose.connect(MONGO_URI)
+// Start the server immediately so Render doesn't timeout
+// Use '0.0.0.0' to ensure it listens on all available interfaces (IPv4 and IPv6)
+const server = app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Server running on port ${PORT}`);
+    console.log(`Access it at http://localhost:${PORT}`);
+    console.log(`Health check available at http://localhost:${PORT}/api/status`);
+});
+
+// Robust Error Handling for the process
+process.on('unhandledRejection', (reason, promise) => {
+    console.error('Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (err) => {
+    console.error('Uncaught Exception thrown:', err);
+});
+
+// Connect to MongoDB asynchronously with a timeout
+mongoose.connect(MONGO_URI, {
+    serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of hanging
+})
   .then(() => {
-    console.log('Connected to MongoDB');
-    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+    console.log('Successfully connected to MongoDB');
   })
   .catch(err => {
-    console.error('MongoDB connection error:', err);
+    console.error('MongoDB connection error:', err.message);
+    console.warn('The server is still running, but database operations will fail until connection is restored.');
+    console.warn('Check your MONGO_URI and ensure your IP is whitelisted in MongoDB Atlas.');
   });
