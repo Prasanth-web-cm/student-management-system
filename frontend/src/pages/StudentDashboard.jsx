@@ -1,39 +1,83 @@
 import React from 'react';
-import { Download, CheckCircle, FileText, AlertCircle } from 'lucide-react';
+import { Download, CheckCircle, FileText, AlertCircle, User } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import PerformancePredictor from '../components/PerformancePredictor';
 import { API_BASE } from '../api';
+import axios from 'axios';
 
 export default function StudentDashboard() {
   const { id } = useParams();
-  const { user } = useAuth();
-  // Use a valid MongoDB ObjectId as a fallback for the demo
-  const studentId = id || (user && user._id) || '234e1a3382234e1a3382234e'; 
+  const { user: currentUser } = useAuth();
+  const [student, setStudent] = React.useState(null);
+  const [loading, setLoading] = React.useState(true);
+
+  // Use a valid MongoDB ObjectId as a fallback
+  const studentId = id || (currentUser && currentUser._id);
+
+  React.useEffect(() => {
+    if (id) {
+      // If we have an ID in URL, fetch that specific student
+      fetchStudentDetails(id);
+    } else if (currentUser && currentUser.role === 'student') {
+      // If no ID in URL but we are a student, use current user
+      setStudent(currentUser);
+      setLoading(false);
+    } else {
+      setLoading(false);
+    }
+  }, [id, currentUser]);
+
+  const fetchStudentDetails = async (sid) => {
+    try {
+      setLoading(true);
+      const res = await axios.get(`${API_BASE}/api/students/${sid}`);
+      setStudent(res.data);
+    } catch (err) {
+      console.error('Error fetching student details:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const downloadMarks = () => {
-    // Call the actual student ID from the URL or Auth context
+    if (!studentId) return;
     window.location.href = `${API_BASE}/api/export/marks/${studentId}`;
   };
 
   const downloadAttendance = () => {
-    // Call the actual student ID from the URL or Auth context
+    if (!studentId) return;
     window.location.href = `${API_BASE}/api/export/attendance/${studentId}`;
   };
 
+  if (loading) return <div className="flex items-center justify-center min-h-screen text-slate-400 font-bold animate-pulse">Syncing profile data...</div>;
+  if (!student) return <div className="flex items-center justify-center min-h-screen text-red-500 font-bold">Student records not located</div>;
+
   return (
-    <div className="space-y-6">
-      <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 flex flex-col md:flex-row items-center gap-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-50 rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2"></div>
-        <div className="w-24 h-24 rounded-full border-4 border-white shadow-lg overflow-hidden shrink-0 z-10 bg-slate-100">
-          <img src={user?.photoUrl ? `${API_BASE}${user.photoUrl}` : "img.jpg"} alt="Student" className="w-full h-full object-cover" />
-        </div>
-        <div className="z-10 text-center md:text-left">
-          <h2 className="text-3xl font-extrabold text-slate-800 tracking-tight">{user?.name || 'Loading...'}</h2>
-          <p className="text-slate-500 font-medium mt-1">{user?.dept || 'Department'} - Section {user?.sec || 'Section'}</p>
-          <div className="flex flex-wrap justify-center md:justify-start gap-4 mt-4">
-            <span className="bg-green-100/80 text-green-700 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm">Status: Active</span>
-            <span className="bg-primary-100/80 text-primary-700 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm">ID: {user?.studentId || 'ID'}</span>
+    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      {/* Dynamic Profile Header */}
+      <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl shadow-slate-100/50 border border-slate-50 relative overflow-hidden group">
+        <div className="flex flex-col md:flex-row items-center gap-8 relative z-10">
+          <div className="relative">
+            <div className="w-40 h-40 rounded-[2.5rem] overflow-hidden border-4 border-white shadow-2xl group-hover:scale-105 transition-transform duration-500">
+              <img 
+                src={student?.photoUrl ? `${API_BASE}${student.photoUrl}` : `https://ui-avatars.com/api/?name=${student?.name || 'User'}&background=random`} 
+                alt={student?.name || 'Student'} 
+                className="w-full h-full object-cover" 
+              />
+            </div>
+            <div className="absolute -bottom-2 -right-2 bg-emerald-500 text-white p-3 rounded-2xl shadow-lg border-4 border-white">
+              <User size={20} />
+            </div>
+          </div>
+          
+          <div className="text-center md:text-left space-y-2">
+            <div className="flex flex-wrap justify-center md:justify-start gap-3 mb-2">
+              <span className="px-4 py-1.5 rounded-full bg-primary-50 text-primary-600 text-xs font-black uppercase tracking-widest">{student?.dept || 'N/A'} Dept</span>
+              <span className="px-4 py-1.5 rounded-full bg-slate-100 text-slate-500 text-xs font-black uppercase tracking-widest">Section {student?.sec || 'N/A'}</span>
+            </div>
+            <h1 className="text-4xl font-[900] text-slate-900 tracking-tight">{student?.name || 'Unknown Student'}</h1>
+            <p className="text-slate-400 font-mono font-bold tracking-widest uppercase">{student?.studentId || 'ID PENDING'}</p>
           </div>
         </div>
       </div>

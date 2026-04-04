@@ -20,9 +20,18 @@ const Placeholder = ({ title }) => (
 
 const ProtectedRoute = ({ children, role }) => {
   const { user, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
-  if (!user) return <Navigate to={role === 'admin' ? '/admin/login' : '/login'} />;
-  if (role && user.role !== role) return <Navigate to="/" />;
+  if (loading) return <div className="flex items-center justify-center min-h-screen font-bold text-slate-400 animate-pulse">Checking credentials...</div>;
+  
+  if (!user) {
+    return <Navigate to={role === 'admin' ? '/admin/login' : '/login'} replace />;
+  }
+  
+  // If role is an array, check if user has any of those roles
+  const allowedRoles = Array.isArray(role) ? role : [role];
+  if (role && !allowedRoles.includes(user.role)) {
+    return <Navigate to="/" replace />;
+  }
+  
   return children;
 };
 
@@ -50,7 +59,7 @@ function App() {
             <Route 
               path="/students/:id" 
               element={
-                <ProtectedRoute role="student">
+                <ProtectedRoute role={['admin', 'student']}>
                   <StudentDashboard />
                 </ProtectedRoute>
               } 

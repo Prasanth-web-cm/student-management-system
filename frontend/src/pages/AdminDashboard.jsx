@@ -35,20 +35,22 @@ export default function AdminDashboard() {
     try {
       setLoading(true);
       const res = await axios.get(`${API_BASE}/api/students`);
-      const data = res.data;
+      const data = Array.isArray(res.data) ? res.data : [];
       setStudents(data);
       setStats(prev => ({
         ...prev,
         totalStudents: data.length,
         newRegistrations: data.filter(s => {
+          if (!s.createdAt) return false;
           const regDate = new Date(s.createdAt);
           const now = new Date();
           return regDate.getMonth() === now.getMonth() && regDate.getFullYear() === now.getFullYear();
         }).length
       }));
-      setLoading(false);
     } catch (err) {
       console.error('Error fetching dashboard data:', err);
+      setStudents([]); // Reset on error
+    } finally {
       setLoading(false);
     }
   };
@@ -65,11 +67,14 @@ export default function AdminDashboard() {
     }
   };
 
-  const filteredStudents = students.filter(student => 
-    student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.dept.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredStudents = students.filter(student => {
+    if (!student || !student.name || !student.studentId) return false;
+    return (
+      student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (student.dept && student.dept.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  });
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">

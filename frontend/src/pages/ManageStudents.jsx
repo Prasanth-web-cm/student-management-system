@@ -50,6 +50,7 @@ export default function ManageStudents() {
   };
 
   const filteredStudents = students.filter(student => {
+    if (!student || !student.name || !student.studentId) return false;
     const matchesSearch = student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          student.studentId.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesDept = selectedDept === 'All' || student.dept === selectedDept;

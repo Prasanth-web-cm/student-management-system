@@ -50,6 +50,30 @@ app.use('/api/quizzes', quizRoutes);
 app.use('/api/export', exportRoutes);
 app.use('/api/ml', mlRoutes);
 
+// --- START: SERVE FRONTEND STATIC FILES ---
+// Note: This works in production if you run 'npm run build' in the frontend folder first.
+const frontendFolder = path.join(__dirname, '..', 'frontend', 'dist');
+
+if (fs.existsSync(frontendFolder)) {
+    // Serve any static files (like JS, CSS, images) from the 'dist' folder
+    app.use(express.static(frontendFolder));
+
+    // For any request that doesn't match an API route or a static file,
+    // send back the index.html from the frontend folder.
+    // This supports client-side routing on page refresh.
+    app.get('/*splat', (req, res) => {
+        // Exclude /api routes from being caught here for debugging clarity
+        if (!req.url.startsWith('/api/')) {
+            res.sendFile(path.resolve(frontendFolder, 'index.html'));
+        } else {
+            res.status(404).json({ error: 'API route not found' });
+        }
+    });
+} else {
+    console.warn(`WARNING: Frontend build folder not found at ${frontendFolder}. Check if frontend has been built.`);
+}
+// --- END: SERVE FRONTEND STATIC FILES ---
+
 // Import routes later
 
 const PORT = process.env.PORT || 5000;

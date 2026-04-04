@@ -10,16 +10,29 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      const savedUser = JSON.parse(localStorage.getItem('user'));
-      if (savedUser) {
-        setUser(savedUser);
+    try {
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        const savedUserData = localStorage.getItem('user');
+        if (savedUserData && savedUserData !== 'undefined') {
+          const savedUser = JSON.parse(savedUserData);
+          if (savedUser) {
+            setUser(savedUser);
+          }
+        }
+      } else {
+        delete axios.defaults.headers.common['Authorization'];
       }
-    } else {
-      delete axios.defaults.headers.common['Authorization'];
+    } catch (error) {
+      console.error('Error loading auth state:', error);
+      // Clean up corrupted storage
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      setToken(null);
+      setUser(null);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [token]);
 
   const login = async (role, credentials) => {
